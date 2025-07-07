@@ -196,14 +196,20 @@ echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
 
 **Preparing the files**
 
-1. Navigate to user home directory.
+1. Navigate to user home directory and create your SPEC file:
 
    ```bash
    cd
+   touch helloworld.spec
    ```
 
-2. Define the SPEC file, using the example below.
+2. Open the spec file using the method of your choice, for example:
 
+   ```bash
+   nano helloworld.spec
+   ```
+
+   Copy the example below into the file.
    It will create a simple hello world RPM package, which will include a bash script that
    prints *"Hello, world!"*.
 
@@ -244,7 +250,7 @@ echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
    - Initial package
    ```
 
-3. Create the simple script and make it executable.
+3. Create a launch script and make it executable.
 
    ```bash
    mkdir -p ./helloworld-1.0

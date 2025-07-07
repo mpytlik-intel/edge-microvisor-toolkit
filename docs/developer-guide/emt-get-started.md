@@ -4,12 +4,71 @@ Edge Microvisor Toolkit is a lightweight, container-first Linux distribution,
 optimized for Intel® architecture. It provides a secure and high-performing
 environment for deploying edge workloads across multiple deployment models.
 
-This section provides an overview of both the operating system and build
+<!--This section provides an overview of both the operating system and build
 pipelines. Once you have decided on the usage scenarios presented below, you can
 move on to:
 
 - [Build a new Edge Microvisor Toolkit Image.](./get-started/emt-building-howto.md)
-- [Install Edge Microvisor Toolkit from existing image.](./get-started/emt-installation-howto.md)
+- [Install Edge Microvisor Toolkit from existing image.](./get-started/emt-installation-howto.md)-->
+
+## Hardware and Software Requirements
+
+The hardware and software requirements outlined here apply to Edge Microvisor Toolkit itself.
+Specific requirements will mostly depend on the type of deployment (container, VM,
+K8s workload) and the type and number of workloads deployed on a node. When choosing the
+hardware device, microvisor image, and the workload packaging method, consider the
+requirements & KPIs of the intended applications/workloads, to ensure that sufficient
+residual compute capability is available.
+
+### Hardware Requirements
+
+Edge Microvisor Toolkit is designed to support all Intel® platforms with the latest
+Intel® kernel to provide all available features for applications
+and workloads. It has been validated on the following platforms:
+
+**CPU**
+
+|      Atom             |               Core™           |      Xeon®              |
+| ----------------------| ----------------------------- | ----------------------- |
+| Intel® Atom® X Series | 12th Gen Intel® Core™         | 5th Gen Intel® Xeon® SP |
+|                       | 13th Gen Intel® Core™         | 4th Gen Intel® Xeon® SP |
+|                       | Intel® Core™ Ultra (Series 1) | 3rd Gen Intel® Xeon® SP |
+
+**Discrete GPU**
+
+|        Intel®         |           NVIDIA®             |
+|-----------------------|-------------------------------|
+| Intel® Arc™ B580      | NVIDIA® Tesla® P100           |
+|                       | GeForce RTX™ 3090             |
+
+
+### Recommended Hardware Configuration
+
+#### Edge Microvisor Toolkit Developer Node
+
+| Component                  | Intel® Atom™ | Core™/Core™ Ultra | Xeon®   |
+|----------------------------|--------------|-------------------|---------|
+| RAM                        | 2 GB         | 2 GB              | 2 GB    |
+| Storage (SSD/NVMe or eMMC) | 32 GB        | 32 GB             | 32 GB   |
+| Networking (Ethernet)      | 1 GbE        | 1 GbE             | 1 GbE   |
+
+#### Edge Microvisor Toolkit (Open Edge Platform or Standalone Node)
+
+| Component                  | Intel® Atom™    | Core™/Core™ Ultra | Xeon®           |
+|----------------------------|-----------------|-------------------|-----------------|
+| RAM                        | 16 GB           | 64 GB             | 128 GB          |
+| Storage (SSD/NVMe or eMMC) | 64 GB           | 512 GB            | 1 TB            |
+| Networking (Ethernet)      | 1 GbE or higher | 1 GbE or higher   | 1 GbE or higher |
+
+
+### Software Requirements
+
+| Component        | Edge Microvisor Toolkit Developer Node | Edge Microvisor Toolkit (Open Edge Platform or Standalone Node) |
+|------------------|-------------------------|-------------------------|
+| Kernel Version   | Intel® Kernel 6.12      | Intel® Kernel 6.12      |
+| Bootloader       | GRUB                    | Systemd-boot            |
+| Update Mechanism | RPM-based with TDNF     | Image-based A/B updates |
+
 
 ## Usage Scenarios
 
@@ -21,9 +80,11 @@ Framework - a complete integrated system providing full lifecycle management for
 your edge devices, including remote deployment and management of Kubernetes
 applications.
 
+<!--### Select a Standard Edge Microvisor Toolkit Image-->
+
 ### Build Your Own Edge Microvisor Toolkit
 
-Edge Microvisor Toolkit is a downstream of Azure Linux. It is composed of multiple modules to
+Edge Microvisor Toolkit is an operating system derived from Azure Linux. It is composed of multiple modules to
 facilitate creating `rpm` based OS images supporting a variety of different image formats.
 
 The toolkit has an `imageconfig` construct in the JSON format that defines the characteristics
@@ -214,14 +275,20 @@ sudo apt-get install rpm
    echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
    ```
 
-2. Navigate to user home directory.
+2. Navigate to user home directory and create your SPEC file:
 
    ```bash
    cd
+   touch helloworld.spec
    ```
 
-3. Define the SPEC file, using the example below.
+3. Open the spec file using the method of your choice, for example:
 
+   ```bash
+   nano helloworld.spec
+   ```
+
+   Copy the example below into the file.
    It will create a simple hello world RPM package, which will include a bash script that
    prints *"Hello, world!"*.
 
@@ -300,19 +367,7 @@ sudo apt-get install rpm
    EOF
    ```
 
-3. Update the `cgmanifest.json` file.
-4. Build an image with the package included and test locally.
-5. Upload the tar.gz package to the source package repository after is has been tested locally.
-
-
-
-
-
-
-
-
-
-4. Copy the RPM package files to the building directories and build it.
+3. Copy the RPM package files to the building directories and build it.
 
    ```bash
    cp helloworld-1.0.tar.gz ./rpmbuild/SOURCES
@@ -343,6 +398,25 @@ sudo apt-get install rpm
        python3 -m pip install -r ./scripts/requirements.txt
        python3 ./scripts/update_cgmanifest.py first ../cgmanifest.json ../SPECS/helloworld.spec
    ```
+
+**Building the package and testing it locally**
+
+1. Build your package bvy running the following command:
+
+   ```bash
+   make build-packages # to rebuild the packages
+   ```
+
+2. Build the image containing the package by following the steps outlined in [Building the Edge Microvisor Toolkit Image](#build-the-edge-microvisor-toolkit-image), and pointing to your modified imageconfig file.
+
+## Install Edge Microvisor Toolkit
+
+### Bare Metal Installation
+
+
+
+### Virtual Machine Installation
+
 
 <!--### Edge Microvisor Toolkit Developer Node
 
