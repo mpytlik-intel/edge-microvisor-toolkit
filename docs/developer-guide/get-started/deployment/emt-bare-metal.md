@@ -1,8 +1,10 @@
 # Deploying Edge Microvisor Toolkit on Bare Metal
 
-Below you will find all methods of deployment on Bare Metal with ISO image.
+Below you will find all methods of deployment on Bare Metal using ISO or RAW images.
 
-## Requirements
+## Mutable ISO Deployment
+
+### Requirements
 
 You will need:
 
@@ -11,7 +13,7 @@ You will need:
 - Access to the target machine.
 - Optional: Monitor and keyboard, or BMC/iDRAC/iKVM access.
 
-## Create Bootable USB (Linux)
+### Create Bootable USB (Linux)
 
 Follow the steps below to create a bootable USB device to install Edge Microvisor Toolkit
 on your bare metal system.
@@ -40,7 +42,7 @@ sudo sync
 
 Then, safely remove the USB drive.
 
-## Create Bootable USB (Windows)
+### Create Bootable USB (Windows)
 
 On Windows, download and install ISO writer software such as [Rufus](https://rufus.ie/en).
 
@@ -55,7 +57,7 @@ On Windows, download and install ISO writer software such as [Rufus](https://ruf
 1. Confirm warnings about data being erased.
 1. Wait for completion and safely eject the USB.
 
-## Boot and Install Edge Microvisor Toolkit
+### Boot and Install Edge Microvisor Toolkit
 
 **Boot from USB**
 
@@ -94,10 +96,148 @@ On Windows, download and install ISO writer software such as [Rufus](https://ruf
 
    **You are now ready to use Edge Microvisor Toolkit!**
 
-## Post Installation Check
+### Post Installation Check
 
 Check the version of Edge Microvisor Toolkit by running the following command:
 
 ```bash
 cat /etc/os-release
 ```
+
+## Immutable RAW deployment
+
+### Requirements
+
+You will need:
+
+- Edge Microvisor Toolkit Standalone Node 3.0 RAW image.
+- USB flash drive (min. 8GB).
+- Access to the target machine.
+- Optional: Monitor and keyboard, or BMC/iDRAC/iKVM access.
+
+### Create Bootable USB
+
+1. Build or download the RAW image
+
+2. Unpack the RAW image:
+
+   Run:
+
+   ```bash
+   gzip -d edge_microvisor_toolkit.raw.gz
+   chmod -Rf 777 edge_microvisor_toolkit.raw
+   ```
+
+3. Flash the RAW image to a the USB flash drive using the 'dd' command.
+
+   Run:
+
+   ```bash
+   sudo dd if=edge_microvisor_toolkit.raw of=/dev/sdc status=progress
+   ```
+
+   > **Note:** Successful flashing of the image should produce partitions such as /dev/sdb and /dev/sdc
+
+### Boot and Install Edge Microvisor Toolkit RAW
+
+1. Configure the server to reboot with required disk/OS/partition
+
+   Using the CLI method, run `sudo efibootmgr`:
+
+   ```bash
+   BootCurrent: 0002
+   BootOrder: 0002,0012,0014,0015
+   Boot0002* ubuntu
+   Boot0012  EFI Fixed Disk Boot Device 2
+   Boot0014  Cruzer Blade
+   Boot0015  NIC in Slot 2 Port 2 Partition 1
+   MirroredPercentageAbove4G: 0.00
+   MirrorMemoryBelow4GB: false
+   ```
+
+   Find the ID of EMT boot device and run `sudo efibootmgr -o <ID of EMT boot device>`. Then run `sudo reboot`
+
+   You can also reboot and go to the boot manager to select the flashed partition:
+
+   ![Partition selection UI](../assets/emt_flashing_raw_partitionrebootui_image-2024-8-1_13-3-1-1.png)
+
+2. Check date
+
+   Run `sudo date 080509312024`.
+
+   The string of numbers after `date` is the date in time in the following format: Month:08 Day:05 Hour:09 Minute:31 Year: 2024
+
+
+3. Configure and enable ssh
+
+   Run:
+
+   ```bash
+   echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+   echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+   ```
+
+4. Restart sshd service to apply changes
+
+   Run `sudo systemctl restart sshd`.
+
+   > **Note**: If you want to use the bootable storage device for other purposes, you can [allocate the remaining storage space to one of the partitions](./emt-flashing-raw-partition-resize.md)
+
+### Troubleshooting (Best Known Methods)
+
+- **BIOS Security Settings**
+
+   Disable the Secure Boot option in BIOS Settings if it was enabled.
+
+- **Network is not working in XR12 (with x710 NIC)**
+
+1. Install the drivers manually:
+
+   ```bash
+   modprobe i40e
+   ```
+
+2. Update the ssh configuration to ssh with the following information:
+
+   ```bash
+   vi /etc/ssh/sshd_config
+
+   PermitRootLogin yes
+
+   PasswordAuthentication yes
+   ```
+
+3. Restart sshd service:
+
+   ```bash
+   systemctl restart sshd
+   ```
+
+   To debug, run only:
+
+   ```bash
+   journalctl -u sshd -f
+   ```
+
+- **Switching between multiple OS disks**
+
+1. Configure efibootmgr. Run `sudo efibootmgr`:
+
+   ```bash
+   BootCurrent: 0000
+   BootOrder: 0000,0005,0006,0002
+   Boot0000* EFI Fixed Disk Boot Device 2
+   Boot0002* ubuntu
+   Boot0005* Cruzer Blade
+   Boot0006* NIC in Slot 2 Port 2 Partition 1
+   MirroredPercentageAbove4G: 0.00
+   MirrorMemoryBelow4GB: false
+   ```
+
+2. Select the boot device with the desired OS and run `efibootmgr -o <ID of boot device>`
+
+3. Reboot to change the OS to boot
+
+   ```bash
+   reboot
+   ```
