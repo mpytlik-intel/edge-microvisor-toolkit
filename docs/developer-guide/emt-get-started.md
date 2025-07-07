@@ -16,7 +16,7 @@ Framework - a complete integrated system providing full lifecycle management for
 your edge devices, including remote deployment and management of Kubernetes
 applications.
 
-[Select a Standard Edge Microvisor Toolkit Image]()
+<!--[Select a Standard Edge Microvisor Toolkit Image]()-->
 
 [Build Your Own Edge Microvisor Toolkit](./get-started/emt-building-howto.md)
 
@@ -25,3 +25,7 @@ applications.
 [Bare Metal Installation](./get-started/deployment/emt-bare-metal.md)
 
 [Virtual Machine Installation](./get-started/deployment/emt-vm-guest.md)
+
+## Host Guest VMs under Edge Microvisor Toolkit
+
+[Deploying Other OS as Guest Virtual Machines under EMT Host](./get-started/deployment/emt-vm-host.md)
